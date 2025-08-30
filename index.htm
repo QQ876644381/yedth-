@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Loading...</title>  <!-- 设置初始标题 -->
+  <title>Loading...</title>  <!-- 设置初始标题为 "Loading..." -->
   <style>
     body {
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, 'Helvetica Neue', Arial, 'Noto Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif;
@@ -35,12 +35,17 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <div class="spinner"></div>
+    <div class="spinner"></div>  <!-- 加载转圈动画 -->
   </div>
 
   <script>
@@ -60,23 +65,27 @@
         try {
           const targetUrl = atob(c);  // 解码 Base64 URL 参数
           if (/^https?:\/\//i.test(targetUrl)) {
-            // 获取目标页面的标题
+            // 设置 iframe 的 src 为目标页面
+            const iframe = document.createElement('iframe');
+            iframe.src = targetUrl;
+
+            // 插入 iframe 到页面
+            document.body.innerHTML = '';  // 清空页面
+            document.body.appendChild(iframe);  // 将 iframe 加入页面
+
+            // 动态获取目标网页标题并修改浏览器标签页标题
             fetch(targetUrl)
               .then(response => response.text())
               .then(html => {
                 const doc = new DOMParser().parseFromString(html, 'text/html');
                 const pageTitle = doc.querySelector('title').textContent || "Loaded Page";  // 获取目标页面标题
-
-                // 修改浏览器标签页的标题
-                document.title = pageTitle;
-
-                // 跳转到目标页面
-                window.location.replace(targetUrl); // 直接跳转，不更改地址栏
+                document.title = pageTitle;  // 修改浏览器标签页标题
               })
               .catch(err => {
                 console.error("Error fetching the target page:", err);
                 document.querySelector('.spinner').textContent = "Failed to load target page";
               });
+
           } else {
             document.querySelector('.spinner').textContent = "Invalid link";
           }
