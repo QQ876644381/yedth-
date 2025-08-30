@@ -3,33 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Loading...</title>  <!-- 设置初始标题为 "Loading..." -->
+  <title>Loading...</title>
   <style>
     body {
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, 'Helvetica Neue', Arial, 'Noto Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      background: #0f172a;
       margin: 0;
-    }
-    .container {
-      max-width: 100%;  /* 全屏显示 */
-      width: 100%;
-      height: 100vh;  /* 占满整个屏幕 */
-      padding: 0;
+      height: 100vh;
+      background: #fff;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
     }
     .spinner {
       border: 8px solid #f3f3f3;
       border-top: 8px solid #3498db;
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 2s linear infinite;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
     }
     @keyframes spin {
       0% { transform: rotate(0deg); }
@@ -37,69 +27,58 @@
     }
     iframe {
       width: 100%;
-      height: 100%;
+      height: 100vh;
       border: none;
+      display: none;
     }
   </style>
 </head>
 <body>
-
-  <div class="container">
-    <div class="spinner"></div>  <!-- 加载转圈动画 -->
-  </div>
+  <div class="spinner" id="loader"></div>
 
   <script>
-    // 获取链接参数 c
+    // 获取 c 参数
     function getC() {
+      return new URL(location.href).searchParams.get('c');
+    }
+
+    const c = getC();
+    if (c) {
       try {
-        return new URL(location.href).searchParams.get('c');
-      } catch (e) {
-        return null;
-      }
-    }
+        const targetUrl = atob(c);  // base64 解码
+        if (/^https?:\/\//i.test(targetUrl)) {
+          // 创建 iframe
+          const iframe = document.createElement('iframe');
+          iframe.src = targetUrl;
 
-    // 解码并加载目标页面
-    function loadTargetPage() {
-      const c = getC();
-      if (c) {
-        try {
-          const targetUrl = atob(c);  // 解码 Base64 URL 参数
-          if (/^https?:\/\//i.test(targetUrl)) {
-            // 设置 iframe 的 src 为目标页面
-            const iframe = document.createElement('iframe');
-            iframe.src = targetUrl;
+          // iframe 加载完毕后隐藏 loading
+          iframe.onload = function() {
+            document.getElementById("loader").style.display = "none";
+            iframe.style.display = "block";
+          };
 
-            // 插入 iframe 到页面
-            document.body.innerHTML = '';  // 清空页面
-            document.body.appendChild(iframe);  // 将 iframe 加入页面
+          document.body.appendChild(iframe);
 
-            // 动态获取目标网页标题并修改浏览器标签页标题
-            fetch(targetUrl)
-              .then(response => response.text())
-              .then(html => {
-                const doc = new DOMParser().parseFromString(html, 'text/html');
-                const pageTitle = doc.querySelector('title').textContent || "Loaded Page";  // 获取目标页面标题
-                document.title = pageTitle;  // 修改浏览器标签页标题
-              })
-              .catch(err => {
-                console.error("Error fetching the target page:", err);
-                document.querySelector('.spinner').textContent = "Failed to load target page";
-              });
-
-          } else {
-            document.querySelector('.spinner').textContent = "Invalid link";
-          }
-        } catch (e) {
-          document.querySelector('.spinner').textContent = "Failed to load. Please try again.";
+          // 抓取目标网页标题并替换当前页面标题
+          fetch(targetUrl)
+            .then(res => res.text())
+            .then(html => {
+              const doc = new DOMParser().parseFromString(html, "text/html");
+              const pageTitle = doc.querySelector("title")?.innerText || "Untitled";
+              document.title = pageTitle;
+            })
+            .catch(() => {
+              document.title = "Loaded Page";
+            });
+        } else {
+          document.body.innerHTML = "<p>Invalid link</p>";
         }
-      } else {
-        document.querySelector('.spinner').textContent = "No target link found.";
+      } catch (err) {
+        document.body.innerHTML = "<p>Error loading page</p>";
       }
+    } else {
+      document.body.innerHTML = "<p>No target link found</p>";
     }
-
-    // 页面加载时调用
-    window.onload = loadTargetPage;
   </script>
-
 </body>
 </html>
