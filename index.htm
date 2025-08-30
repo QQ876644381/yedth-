@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>防红系统</title>
+  <title>Redirection System</title>
   <style>
     body {
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, 'Helvetica Neue', Arial, 'Noto Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif;
@@ -12,53 +12,42 @@
       justify-content: center;
       min-height: 100vh;
       background: #0f172a;
-      color: #e2e8f0;
       margin: 0;
     }
     .container {
-      max-width: 800px;
       background: #111827;
       border-radius: 16px;
-      padding: 24px;
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
     }
-    h1 {
-      font-size: 24px;
-      margin-bottom: 10px;
-    }
-    .iframe-container {
-      margin-top: 20px;
-      position: relative;
-      padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-      height: 0;
-      overflow: hidden;
-      max-width: 100%;
-    }
-    iframe {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
     .loading-message {
-      text-align: center;
       font-size: 18px;
       color: #fff;
+      margin-bottom: 20px;
+    }
+    .spinner {
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #3498db;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 2s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h1>欢迎使用防红系统</h1>
-    <p class="loading-message">正在加载目标内容，请稍等...</p>
-
-    <div class="iframe-container">
-      <iframe id="target-frame" src="" title="Target Page" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
-    </div>
-
+    <div class="loading-message">Loading...</div>
+    <div class="spinner"></div>
   </div>
 
   <script>
@@ -79,16 +68,15 @@
           const targetUrl = atob(c);  // 解码 Base64 URL 参数
           if (/^https?:\/\//i.test(targetUrl)) {
             // 设置 iframe 的 src 为目标页面
-            document.getElementById('target-frame').src = targetUrl;
-            document.querySelector('.loading-message').textContent = "页面加载中...";
+            window.location.replace(targetUrl); // 直接跳转，不更改地址栏
           } else {
-            document.querySelector('.loading-message').textContent = "无效的链接";
+            document.querySelector('.loading-message').textContent = "Invalid link";
           }
         } catch (e) {
-          document.querySelector('.loading-message').textContent = "加载失败，请重试";
+          document.querySelector('.loading-message').textContent = "Failed to load. Please try again.";
         }
       } else {
-        document.querySelector('.loading-message').textContent = "未找到目标链接参数";
+        document.querySelector('.loading-message').textContent = "No target link found.";
       }
     }
 
