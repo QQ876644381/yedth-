@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>跳转中…</title>
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>防红系统</title>
   <style>
     body {
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, 'Helvetica Neue', Arial, 'Noto Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif;
@@ -14,91 +13,88 @@
       min-height: 100vh;
       background: #0f172a;
       color: #e2e8f0;
+      margin: 0;
     }
-    .box {
-      max-width: 720px;
+    .container {
+      max-width: 800px;
       background: #111827;
       border-radius: 16px;
       padding: 24px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
     }
     h1 {
-      font-size: 20px;
-      margin: 0 0 6px 0;
+      font-size: 24px;
+      margin-bottom: 10px;
     }
-    p {
-      opacity: .85;
-      margin: 4px 0;
+    .iframe-container {
+      margin-top: 20px;
+      position: relative;
+      padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+      height: 0;
+      overflow: hidden;
+      max-width: 100%;
     }
-    code {
-      word-break: break-all;
+    iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
     }
-    .btn {
-      display: inline-block;
-      margin-top: 12px;
-      padding: 10px 14px;
-      border-radius: 10px;
-      background: #2563eb;
+    .loading-message {
+      text-align: center;
+      font-size: 18px;
       color: #fff;
-      text-decoration: none;
     }
   </style>
-  <script>
-    (function() {
-      function getC() {
-        try {
-          return new URL(location.href).searchParams.get('c');
-        } catch (e) {
-          var m = location.search.match(/[?&]c=([^&]+)/);
-          return m ? decodeURIComponent(m[1]) : null;
-        }
-      }
-
-      var c = getC();
-      if (!c) return;
-
-      try {
-        var url = atob(c);  // 解码目标 URL
-        if (!/^https?:\/\//i.test(url)) throw new Error('invalid target');
-
-        // 使用 location.replace 跳转到目标网站
-        location.replace(url);  // 直接跳转到目标网站
-
-      } catch (e) {
-        console.error(e);
-      }
-    })();
-  </script>
 </head>
 <body>
-  <div class="box">
-    <h1>正在安全跳转…</h1>
-    <p>若 1 秒内未自动跳转，请点击下方按钮打开，或复制链接到系统浏览器。</p>
-    <p id="uibox"></p>
-    <a class="btn" id="open" href="#" rel="noopener">立即打开</a>
-  </div>
-  <script>
-    (function() {
-      function getC() {
-        try {
-          return new URL(location.href).searchParams.get('c');
-        } catch (e) {
-          var m = location.search.match(/[?&]c=([^&]+)/);
-          return m ? decodeURIComponent(m[1]) : null;
-        }
-      }
 
-      var c = getC();
+  <div class="container">
+    <h1>欢迎使用防红系统</h1>
+    <p class="loading-message">正在加载目标内容，请稍等...</p>
+
+    <div class="iframe-container">
+      <iframe id="target-frame" src="" title="Target Page"></iframe>
+    </div>
+
+  </div>
+
+  <script>
+    // 获取链接参数 c
+    function getC() {
+      try {
+        return new URL(location.href).searchParams.get('c');
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // 解码并加载目标页面
+    function loadTargetPage() {
+      const c = getC();
       if (c) {
         try {
-          var url = atob(c);  // 解码目标 URL
-          if (/^https?:\/\//i.test(url)) {
-            document.getElementById('open').href = url;  // 设置按钮链接
-            document.getElementById('uibox').innerHTML = '<code>' + url.replace(/</g, '&lt;') + '</code>';  // 显示目标链接
+          const targetUrl = atob(c);  // 解码 Base64 URL 参数
+          if (/^https?:\/\//i.test(targetUrl)) {
+            // 设置 iframe 的 src 为目标页面
+            document.getElementById('target-frame').src = targetUrl;
+            document.querySelector('.loading-message').textContent = "页面加载中...";
+          } else {
+            document.querySelector('.loading-message').textContent = "无效的链接";
           }
-        } catch (e) {}
+        } catch (e) {
+          document.querySelector('.loading-message').textContent = "加载失败，请重试";
+        }
+      } else {
+        document.querySelector('.loading-message').textContent = "未找到目标链接参数";
       }
-    })();
+    }
+
+    // 页面加载时调用
+    window.onload = loadTargetPage;
   </script>
+
 </body>
 </html>
